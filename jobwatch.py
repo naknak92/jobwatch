@@ -206,7 +206,9 @@ def llm_score(jobs):
     """Note les offres avec Claude si ANTHROPIC_API_KEY est défini, sinon par mots-clés."""
     key = os.environ.get("ANTHROPIC_API_KEY")
     # le profil peut venir d'un secret GitHub (PROFILE) pour ne pas le publier dans le dépôt
-    profile = os.environ.get("PROFILE") or PROFILE_FILE.read_text(encoding="utf-8")
+    profile = os.environ.get("PROFILE") or (PROFILE_FILE.read_text(encoding="utf-8") if PROFILE_FILE.exists() else "")
+    if not profile:
+        key = None
     for job in jobs:
         job["score"], job["why"] = keyword_score(job)
         if not key:
