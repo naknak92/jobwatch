@@ -5,13 +5,13 @@ Toutes les **heures** (lancé par cron-job.org, avec en secours la planification
 2. supprime les doublons (une même offre publiée sur plusieurs sites) et les offres déjà envoyées ;
 3. écarte les stages, alternances, thèses et post-docs ;
 4. donne à chaque offre une note sur 10 ;
-5. crée **une issue GitHub par nouvelle offre** notée 6/10 ou plus, et te l'assigne. **GitHub t'envoie alors un e-mail** sur l'adresse de ton compte, sans aucun mot de passe à configurer.
+5. regroupe toutes les nouvelles offres notées 6/10 ou plus dans **une seule issue GitHub par passage**, et te l'assigne. **GitHub t'envoie alors un seul e-mail** avec toutes les offres, sur l'adresse de ton compte, sans aucun mot de passe à configurer.
 
-Le tout premier lancement, et tout passage qui trouve plus de 10 offres d'un coup, crée une seule issue récapitulative, pour ne pas t'envoyer des dizaines d'e-mails.
+Jusqu'à 10 offres, l'e-mail détaille chacune ; au-delà, il les présente dans un tableau compact.
 
 Délai réel : une offre publiée t'arrive en général dans l'heure qui suit.
 
-Une fois que tu as postulé, **ferme l'issue** : la liste des issues ouvertes devient ta liste d'offres à traiter.
+Une fois que tu as traité toutes les offres d'un e-mail, **ferme l'issue** : la liste des issues ouvertes devient ta liste d'offres à traiter.
 
 Welcome to the Jungle et l'APEC bloquent les robots, donc ils ne sont pas couverts directement.
 

@@ -238,17 +238,20 @@ def llm_score(jobs):
 # Chaque offre devient une issue du dépôt, assignée au propriétaire : GitHub envoie alors
 # automatiquement un e-mail sur l'adresse du compte, sans aucun mot de passe à fournir.
 
-MAX_ISSUES_PER_RUN = 10
+# Jusqu'à ce nombre d'offres, l'e-mail détaille chaque offre ; au-delà, un tableau compact.
+MAX_DETAILED = 10
 
 
 def offer_markdown(j):
     contract = f" · {j['contract']}" if j["contract"] else ""
-    return (f"**{j['score']}/10** — {j['company']} · {j['location']}{contract} · _{j['source']}_\n\n"
+    return (f"### {j['title']}\n**{j['score']}/10** — {j['company']} · {j['location']}{contract} · _{j['source']}_\n\n"
             f"{j['why']}\n\n👉 **[Voir l'annonce et postuler]({j['url']})**")
 
 
 def digest_markdown(jobs):
-    lines = [f"| Note | Offre | Entreprise | Lieu | Site |", "|---|---|---|---|---|"]
+    if len(jobs) <= MAX_DETAILED:
+        return "\n\n---\n\n".join(offer_markdown(j) for j in jobs)
+    lines = ["| Note | Offre | Entreprise | Lieu | Site |", "|---|---|---|---|---|"]
     for j in jobs:
         t = j["title"].replace("|", "/")
         lines.append(f"| {j['score']}/10 | [{t}]({j['url']}) | {j['company']} | {j['location']} | {j['source']} |")
@@ -264,21 +267,20 @@ def create_issue(title, body):
     r.raise_for_status()
 
 
-def notify(jobs, first_run, dry_run):
-    """Une issue par offre (envoyée au plus vite) ; au premier lancement, une seule issue récapitulative."""
-    messages = []
-    if first_run or len(jobs) > MAX_ISSUES_PER_RUN:
-        messages.append((f"🔔 {len(jobs)} offres · {jobs[0]['title']} ({jobs[0]['score']}/10)…",
-                         digest_markdown(jobs)))
+def notify(jobs, dry_run):
+    """Une seule issue (donc un seul e-mail) par passage, avec toutes les nouvelles offres."""
+    top = jobs[0]
+    if len(jobs) == 1:
+        title = f"🔔 {top['score']}/10 · {top['title']} · {top['company']}"
     else:
-        messages += [(f"🔔 {j['score']}/10 · {j['title']} · {j['company']}", offer_markdown(j)) for j in jobs]
+        title = f"🔔 {len(jobs)} offres · {top['title']} ({top['score']}/10)…"
+    body = digest_markdown(jobs)
     if dry_run:
-        (ROOT / "preview.md").write_text("\n\n---\n\n".join(f"## {t}\n\n{b}" for t, b in messages), encoding="utf-8")
+        (ROOT / "preview.md").write_text(f"## {title}\n\n{body}", encoding="utf-8")
         print("Aperçu écrit dans preview.md")
         return
-    for title, body in messages:
-        create_issue(title, body)
-    print(f"{len(messages)} issue(s) créée(s)")
+    create_issue(title, body)
+    print("1 issue créée")
 
 
 # ---------------------------------------------------------------- main
@@ -310,7 +312,7 @@ def main():
     print(f"{len(good)} offres au-dessus de {MIN_SCORE}/10")
 
     if good:
-        notify(good, first_run, args.dry_run)
+        notify(good, args.dry_run)
 
     if not args.dry_run:
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
