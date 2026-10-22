@@ -2,7 +2,9 @@ name: Veille offres data
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # toutes les 10 minutes (GitHub peut décaler de quelques minutes)
+    # Lancement principal : cron-job.org appelle « Run workflow » toutes les 10 minutes.
+    # Cette planification GitHub ne sert que de secours (GitHub en saute beaucoup).
+    - cron: "7,37 * * * *"
   workflow_dispatch:          # bouton « Run workflow » pour lancer à la main
 
 # un seul passage à la fois, pour ne pas envoyer deux fois la même offre
