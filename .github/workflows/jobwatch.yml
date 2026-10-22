@@ -1,11 +1,8 @@
 name: Veille offres data
 
 on:
-  schedule:
-    # Lancement principal : cron-job.org appelle « Run workflow » toutes les 10 minutes.
-    # Cette planification GitHub ne sert que de secours (GitHub en saute beaucoup).
-    - cron: "7,37 * * * *"
-  workflow_dispatch:          # bouton « Run workflow » pour lancer à la main
+  # Lancé une fois par jour par cron-job.org (ou à la main : bouton « Run workflow »)
+  workflow_dispatch:
 
 # un seul passage à la fois, pour ne pas envoyer deux fois la même offre
 concurrency:
@@ -19,7 +16,7 @@ permissions:
 jobs:
   watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

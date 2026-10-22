@@ -32,8 +32,8 @@ SEARCH_TERMS = [
     "business intelligence", "ingénieur IA",
 ]
 MIN_SCORE = int(os.environ.get("MIN_SCORE", "6"))
-# Fenêtre de recherche : courte quand le script tourne souvent, 24 h au tout premier lancement
-HOURS_OLD = int(os.environ.get("HOURS_OLD", "3"))
+# Fenêtre de recherche : un passage par jour, donc 30 h pour avoir de la marge
+HOURS_OLD = int(os.environ.get("HOURS_OLD", "30"))
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36"
 
 # Offres écartées d'office (titre)
@@ -77,7 +77,7 @@ def from_jobspy(hours_old):
                                ("glassdoor", "Paris, France")]:
             try:
                 df = scrape_jobs(site_name=[site], search_term=term, location=location,
-                                 distance=50, results_wanted=25, hours_old=hours_old,
+                                 distance=50, results_wanted=100, hours_old=hours_old,
                                  country_indeed="france", linkedin_fetch_description=False)
             except Exception as e:
                 print(f"[{site}] erreur : {e}", file=sys.stderr)
@@ -95,27 +95,31 @@ def from_jobspy(hours_old):
 
 def from_hellowork():
     jobs = []
+    url = "https://www.hellowork.com/fr-fr/emploi/recherche.html"
     for term in SEARCH_TERMS:
-        url = "https://www.hellowork.com/fr-fr/emploi/recherche.html"
-        try:
-            r = requests.get(url, params={"k": term, "l": "Île-de-France", "d": "d"},
-                             headers={"User-Agent": UA}, timeout=30)
-            r.raise_for_status()
-        except Exception as e:
-            print(f"[hellowork] erreur : {e}", file=sys.stderr)
-            continue
-        soup = BeautifulSoup(r.text, "html.parser")
-        for a in soup.select('a[data-cy="offerTitle"]'):
-            title_company = a.get("title", "")
-            title, _, company = title_company.rpartition(" - ")
-            label = a.get("aria-label", "")
-            m = re.search(r" à (.+?), chez", label)
-            jobs.append({
-                "source": "HelloWork", "title": title or title_company, "company": company,
-                "location": m.group(1) if m else "", "url": "https://www.hellowork.com" + a["href"],
-                "description": label, "contract": "",
-            })
-        time.sleep(2)
+        for page in range(1, 6):
+            # d=h : publiées depuis 24 h ; st=date : les plus récentes d'abord
+            try:
+                r = requests.get(url, params={"k": term, "l": "Île-de-France", "d": "h", "st": "date", "p": page},
+                                 headers={"User-Agent": UA}, timeout=30)
+                r.raise_for_status()
+            except Exception as e:
+                print(f"[hellowork] erreur : {e}", file=sys.stderr)
+                break
+            links = BeautifulSoup(r.text, "html.parser").select('a[data-cy="offerTitle"]')
+            for a in links:
+                title_company = a.get("title", "")
+                title, _, company = title_company.rpartition(" - ")
+                label = a.get("aria-label", "")
+                m = re.search(r" à (.+?), chez", label)
+                jobs.append({
+                    "source": "HelloWork", "title": title or title_company, "company": company,
+                    "location": m.group(1) if m else "", "url": "https://www.hellowork.com" + a["href"],
+                    "description": label, "contract": "",
+                })
+            time.sleep(2)
+            if len(links) < 20:
+                break
     return jobs
 
 
@@ -292,8 +296,7 @@ def main():
 
     seen = json.loads(SEEN_FILE.read_text()) if SEEN_FILE.exists() else {}
 
-    first_run = not seen
-    raw = from_jobspy(24 if first_run else HOURS_OLD) + from_hellowork() + from_france_travail()
+    raw = from_jobspy(HOURS_OLD) + from_hellowork() + from_france_travail()
     new, ids = [], set()
     for job in raw:
         if not job["title"] or EXCLUDE_TITLE.search(job["title"]) or not DATA_TITLE.search(job["title"]):
