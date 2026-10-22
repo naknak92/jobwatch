@@ -1,6 +1,6 @@
 # Veille offres Data Scientist / Data Analyst
 
-Toutes les **10 minutes**, le script :
+Toutes les **heures** (lancé par cron-job.org, avec en secours la planification de GitHub), le script :
 1. cherche les offres récentes sur **LinkedIn, Indeed, Glassdoor et HelloWork** (et **France Travail** si tu ajoutes les clés, voir plus bas) pour : data scientist, data analyst, machine learning engineer, analytics engineer, business intelligence, ingénieur IA, en Île-de-France ;
 2. supprime les doublons (une même offre publiée sur plusieurs sites) et les offres déjà envoyées ;
 3. écarte les stages, alternances, thèses et post-docs ;
@@ -9,14 +9,14 @@ Toutes les **10 minutes**, le script :
 
 Le tout premier lancement, et tout passage qui trouve plus de 10 offres d'un coup, crée une seule issue récapitulative, pour ne pas t'envoyer des dizaines d'e-mails.
 
-Délai réel : une offre publiée t'arrive en général **10 à 20 minutes** plus tard. GitHub décale parfois les lancements de quelques minutes quand ses serveurs sont chargés.
+Délai réel : une offre publiée t'arrive en général dans l'heure qui suit.
 
 Une fois que tu as postulé, **ferme l'issue** : la liste des issues ouvertes devient ta liste d'offres à traiter.
 
 Welcome to the Jungle et l'APEC bloquent les robots, donc ils ne sont pas couverts directement.
 
 ## Ce qui est public
-Le dépôt est public, car un passage toutes les 10 minutes dépasse le quota gratuit d'un dépôt privé. Seuls le code, les mots-clés de recherche et les offres trouvées (les issues) y sont visibles. Rien de personnel : pas de CV, pas d'adresse, pas de mot de passe.
+Le dépôt est public, car des passages fréquents dépassent le quota gratuit d'un dépôt privé. Seuls le code, les mots-clés de recherche et les offres trouvées (les issues) y sont visibles. Rien de personnel : pas de CV, pas d'adresse, pas de mot de passe.
 
 ## Recevoir les e-mails
 Sur https://github.com/settings/notifications, vérifie que :
@@ -26,7 +26,7 @@ Sur https://github.com/settings/notifications, vérifie que :
 ## Réglages
 - **Seuil de note** : change `MIN_SCORE` (6 par défaut) dans `jobwatch.py`.
 - **Mots-clés** : modifie `SEARCH_TERMS` dans `jobwatch.py`.
-- **Fréquence** : modifie la ligne `cron` dans `.github/workflows/jobwatch.yml`.
+- **Fréquence** : modifie la planification du cron « jobwatch » sur cron-job.org.
 - **Note par l'IA** (facultatif, plus précise) : ajoute les secrets `ANTHROPIC_API_KEY` et `PROFILE` (ton profil en texte).
 - **France Travail** (facultatif) : ajoute les secrets `FT_CLIENT_ID` et `FT_CLIENT_SECRET` (clés gratuites sur francetravail.io).
 
